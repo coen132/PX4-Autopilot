@@ -109,7 +109,7 @@ private:
 	inline void send_esc_outputs(const uint16_t *pwm, const uint8_t motor_cnt);
 	inline void send_tune_packet(EscbusTunePacket &tune_packet);
 
-	MixingOutput _mixing_output;
+	MixingOutput _mixing_output{"TAP_ESC", channels_count, *this, MixingOutput::SchedulingPolicy::Auto, true};
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
