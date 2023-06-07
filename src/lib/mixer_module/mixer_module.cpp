@@ -490,6 +490,18 @@ MixingOutput::limitAndUpdateOutputs(float outputs[MAX_ACTUATORS], bool has_updat
 		output_limit_calc(_throttle_armed || _actuator_test.inTestMode(), _max_num_outputs, outputs);
 	}
 
+	if (_armed.in_esc_calibration_mode) {
+		for (int i = 0; i < _max_num_outputs; i++) {
+			if (_current_output_value[i] == _max_value[i]) {
+				_current_output_value[i] = PWM_CALIBRATION_HIGH;
+			}
+
+			if (_current_output_value[i] == _min_value[i]) {
+				_current_output_value[i] = PWM_CALIBRATION_LOW;
+			}
+		}
+	}
+
 	/* now return the outputs to the driver */
 	if (_interface.updateOutputs(stop_motors, _current_output_value, _max_num_outputs, has_updates)) {
 		actuator_outputs_s actuator_outputs{};

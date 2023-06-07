@@ -95,14 +95,15 @@ int do_esc_calibration(orb_advert_t *mavlink_log_pub)
 {
 	calibration_log_info(mavlink_log_pub, CAL_QGC_STARTED_MSG, "esc");
 
-	int	return_code = PX4_OK;
+	int return_code = PX4_OK;
 	uORB::Publication<actuator_test_s> actuator_test_pub{ORB_ID(actuator_test)};
 	// since we publish multiple at once, make sure the output driver subscribes before we publish
 	actuator_test_pub.advertise();
-	px4_usleep(10000);
+	px4_usleep(10_ms);
 
 	// set motors to high
 	set_motor_actuators(actuator_test_pub, 1.f, false);
+	printf("CAL HIGH\n");
 	calibration_log_info(mavlink_log_pub, "[cal] Connect battery now");
 
 
@@ -115,11 +116,9 @@ int do_esc_calibration(orb_advert_t *mavlink_log_pub)
 	while (true) {
 		// We are either waiting for the user to connect the battery. Or we are waiting to let the PWM
 		// sit high.
-		static constexpr hrt_abstime battery_connect_wait_timeout{20_s};
-		static constexpr hrt_abstime pwm_high_timeout{3_s};
-		hrt_abstime timeout_wait = batt_connected ? pwm_high_timeout : battery_connect_wait_timeout;
+		static constexpr hrt_abstime pwm_high_timeout{10_s};
 
-		if (hrt_elapsed_time(&timeout_start) > timeout_wait) {
+		if (hrt_elapsed_time(&timeout_start) > pwm_high_timeout) {
 			if (!batt_connected) {
 				calibration_log_critical(mavlink_log_pub, CAL_QGC_FAILED_MSG, "Timeout waiting for battery");
 				return_code = PX4_ERROR;
@@ -140,17 +139,19 @@ int do_esc_calibration(orb_advert_t *mavlink_log_pub)
 			}
 		}
 
-		px4_usleep(50000);
+		px4_usleep(50_ms);
 	}
 
+	// set motors to low
+	set_motor_actuators(actuator_test_pub, 0.f, false);
+	printf("CAL LOW\n");
+	px4_usleep(10_s);
+
+	// release control
+	set_motor_actuators(actuator_test_pub, 0.f, true);
+	printf("CAL RELEASE\n");
+
 	if (return_code == PX4_OK) {
-		// set motors to low
-		set_motor_actuators(actuator_test_pub, 0.f, false);
-		px4_usleep(4000000);
-
-		// release control
-		set_motor_actuators(actuator_test_pub, 0.f, true);
-
 		calibration_log_info(mavlink_log_pub, CAL_QGC_DONE_MSG, "esc");
 	}
 

@@ -103,6 +103,8 @@ class MixingOutput : public ModuleParams
 {
 public:
 	static constexpr int MAX_ACTUATORS = OutputModuleInterface::MAX_ACTUATORS;
+	static constexpr uint16_t PWM_CALIBRATION_LOW = 1000;
+	static constexpr uint16_t PWM_CALIBRATION_HIGH = 2000;
 
 	enum class SchedulingPolicy {
 		Disabled, ///< Do not drive scheduling (the module needs to call ScheduleOnInterval() for example)

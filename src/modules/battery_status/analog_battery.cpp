@@ -79,6 +79,9 @@ AnalogBattery::updateBatteryStatusADC(hrt_abstime timestamp, float voltage_raw, 
 	const bool connected = voltage_v > BOARD_ADC_OPEN_CIRCUIT_V &&
 			       (BOARD_ADC_OPEN_CIRCUIT_V <= BOARD_VALID_UV || is_valid());
 
+	// printf("BAT%d %.3f %.3f %.3f", _index, (double)voltage_v, (double)BOARD_ADC_OPEN_CIRCUIT_V, (double)BOARD_VALID_UV);
+	// printf(" %d %d %d %d\n", voltage_v > BOARD_ADC_OPEN_CIRCUIT_V, BOARD_ADC_OPEN_CIRCUIT_V <= BOARD_VALID_UV, is_valid(), connected);
+
 	Battery::setConnected(connected);
 	Battery::updateVoltage(voltage_v);
 	Battery::updateCurrent(current_a);
@@ -89,6 +92,7 @@ bool AnalogBattery::is_valid()
 {
 #ifdef BOARD_BRICK_VALID_LIST
 	bool valid[BOARD_NUMBER_BRICKS] = BOARD_BRICK_VALID_LIST;
+	// printf("VALID %d %d %d\n", BOARD_NUMBER_BRICKS, valid[0], valid[1]);
 	return valid[_index - 1];
 #else
 	// TODO: Maybe return false instead?
